@@ -3,15 +3,16 @@
  Created:	2020/4/19 17:56:51
  Author:	qinbi
 */
-#define SENSOR_COUNT 1
 #include "Sensor.hpp"
 #include <math.h>
+using namespace ArduinoDataLogger;
+SensorManagerSingleton<1> SensorManager(Logger);
 Sensor<float>* Thermistor = nullptr;
 constexpr float ref_temp_inverse = 1 / (25 + 273.15);
 // the setup function runs once when you press reset or power the board
 void setup() {
     Serial.begin(115200);
-    Logger.initialize();
+    SensorManager.initialize();
     //Name should be less than 8 characters
     Thermistor = SensorManager.build<float>(F("Therm"));
     Thermistor->setup = []() {
@@ -26,20 +27,14 @@ void setup() {
         return (float)result;
     };
     SensorManager.setup();
+    //In Microseconds
     SensorManager.setUpdateClock(1000000);
     Serial.println(F("Initialization Finished."));
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-    //SensorManager.updateOnClockInterrupt();
-    
-    if (SensorManager.shouldUpdate) {
-        SensorManager.update();
-        Serial.println(Thermistor->getCurrentData());
-        SensorManager.shouldUpdate = false;
-    }
-    
+    SensorManager.updateOnClockInterrupt(SerialOnly);
     yield();
 }
 

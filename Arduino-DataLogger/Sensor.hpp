@@ -3,14 +3,10 @@
 #include "Logger.hpp"
 #include <TimerOne.h>
 
-#ifndef SENSOR_COUNT
-#define SENSOR_COUNT 3
-#endif
-
 constexpr int AnalogInputMax = 1024;
 constexpr int AnalogOutputMax = 256;
 
-class ISensor {
+class ISensor: public Printable {
 protected:
 	String name;
 public:
@@ -28,6 +24,10 @@ public:
 		return name.substring(0, name.lastIndexOf('.'));
 	}
 
+	inline String getFileName() const {
+		return name;
+	}
+
 	virtual void update() = 0;
 
 	virtual void printLogTo(const ILogger&) const = 0;
@@ -36,14 +36,14 @@ public:
 template<class DataType>
 class Sensor :public ISensor {
 protected:
-	volatile DataType current;
+	DataType current;
 public:
 	using update_callback = DataType(*)(void);
 	update_callback onUpdate;
 
 	Sensor(String Name) :ISensor(Name) {  }
 
-	inline volatile DataType getCurrentData() const {
+	inline DataType getCurrentData() const {
 		return current;
 	}
 
@@ -54,17 +54,31 @@ public:
 	virtual void printLogTo(const ILogger& logger) const override {
 		logger.log(this->name, this->current);
 	}
+
+	virtual size_t printTo(Print& p) const override {
+		return p.print(this->current);
+	}
 };
 
-extern ILogger Logger;
+typedef enum {
+	LogOnly,
+	SerialOnly,
+	LogAndSerial,
+	DoNothing
+}UpdateOption;
 
 template<uint8_t SIZE>
 class SensorManagerSingleton {
 protected:
-	static uint8_t InstanceCounter;
-	static ISensor* SensorCollection[SIZE];
+	ILogger& Logger;
+	uint8_t InstanceCounter;
+	ISensor* SensorCollection[SIZE];
 public:
 	static volatile boolean shouldUpdate;
+
+	SensorManagerSingleton(ILogger& logger) :Logger(logger) {
+		InstanceCounter = 0;
+	};
 
 	template<class T>
 	Sensor<T>* build(String name) {
@@ -92,6 +106,15 @@ public:
 		}
 	}
 
+	void initialize() {
+		Logger.initialize();
+		for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
+			if (Logger.storage.exists(SensorCollection[i]->getFileName())) {
+				Logger.storage.remove(SensorCollection[i]->getFileName());
+			}
+		}
+	}
+
 	void setup() const {
 		for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 			SensorCollection[i]->setup();
@@ -100,14 +123,6 @@ public:
 
 	void setUpdateClock(unsigned long interval) const {
 		Timer1.initialize(interval);
-	}
-
-	void updateOnClockInterrupt() const {
-		if (shouldUpdate) {
-			this->update();
-			this->log();
-			shouldUpdate = false;
-		}
 	}
 
 	void update() const {
@@ -119,6 +134,35 @@ public:
 	void log() const {
 		for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 			SensorCollection[i]->printLogTo(Logger);
+		}
+	}
+
+	void updateOnClockInterrupt(UpdateOption opt = LogOnly) const {
+		if (shouldUpdate) {
+			this->update();
+			switch (opt) {
+			case LogOnly:
+				this->log();
+				break;
+			case SerialOnly:
+				for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
+					Serial.print(*SensorCollection[i]);
+					Serial.print(F(" "));
+				}
+				Serial.println();
+				break;
+			case LogAndSerial:
+				this->log();
+				for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
+					Serial.print(*SensorCollection[i]);
+					Serial.print(F(" "));
+				}
+				Serial.println();
+				break;
+			case DoNothing:
+				break;
+			}
+			shouldUpdate = false;
 		}
 	}
 
@@ -142,17 +186,5 @@ public:
 
 	inline uint8_t length() const { return InstanceCounter; }
 };
-
-template<uint8_t SIZE>
-uint8_t SensorManagerSingleton<SIZE>::InstanceCounter = 0;
-template<uint8_t SIZE>
-ISensor* SensorManagerSingleton<SIZE>::SensorCollection[SIZE];
 template<uint8_t SIZE>
 volatile boolean SensorManagerSingleton<SIZE>::shouldUpdate = false;
-
-SensorManagerSingleton<SENSOR_COUNT> SensorManager;
-
-class DataTypeBase :protected Printable {
-public:
-	virtual DataTypeBase& operator=(DataTypeBase&) = 0;
-};
