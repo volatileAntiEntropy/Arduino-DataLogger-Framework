@@ -7,4 +7,5 @@ A Data Logger Coding Framework (Interface) for Arduino and the Data Logger Shiel
 ## Notice
 - The name of sensor is its correspond file name, it must be less or equal to 8 characters since FAT follows 8.3 standard.
 - The correspond log file is sensor's_name.log.
-- You need to plan your total sensor number, and have this statement #define SENSOR_COUNT your_sensor_count.
+- SensorManager.setUpdateClock(t), t is in microseconds.
+- Don't set a clock shorter then 10ms.
