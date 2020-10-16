@@ -1,51 +1,78 @@
 #pragma once
-#include <SPI.h>
+#include <Arduino.h>
+#include "StringDataPacket.hpp"
 #include <SD.h>
 #include <RTClib.h>
 
-void(*reboot)() = 0;
-
-class ILogger {
-public:
-	RTC_DS1307& rtc;
-	SDClass& storage;
-	ILogger(SDClass& Sd, RTC_DS1307& RTC) :storage(Sd), rtc(RTC) {	}
-
-	//if you want to set data update event under other conditions, here is an example
-	//sensor.handle = app.onAvalable(&Serial, sensor.update);
-	//put them in initialize(); and also setInterval in initialize();
-	virtual void initialize() {
-		if (!rtc.begin()) {
-			Serial.println(F("RTC not found, rebooting..."));
-			reboot();
-		}
-		if (!rtc.isrunning()) {
-			Serial.println(F("RTC not running..."));
-		}
-		DateTime now = rtc.now();
-		if (!storage.begin()) {
-			Serial.println(F("Card Initialization Failed."));
-			while (true);
-		}
-	}
-
-	//DataType for a Sensor need to be native type or derived class of Printable
-	template<class DataType>
-	void log(String name, const DataType& data) const {
-		DateTime now = rtc.now();
-		File log = storage.open(name, FILE_WRITE);
-		if (!log) {
-			Serial.println(F("File IO Error."));
-			return;
-		}
-		log.print(now.timestamp());
-		log.print(F("$ "));
-		log.println(data);
-		log.close();
-	}
-};
-
 namespace ArduinoDataLogger {
-	RTC_DS1307 RTC;
-	ILogger Logger(SD, RTC);
+
+	typedef enum {
+		TIMESTAMP,
+		MILLISECONDS,
+		TIMESPAN
+	}TimeLogOption;
+
+	class ILogger {
+	public:
+		DateTime beginning;
+		RTC_DS1307& rtc;
+		SDClass& storage;
+		ILogger(SDClass& Sd, RTC_DS1307& RTC) :storage(Sd), rtc(RTC), beginning() {	}
+
+		//if you want to set data update event under other conditions, here is an example
+		//sensor.handle = app.onAvalable(&Serial, sensor.update);
+		//put them in initialize(); and also setInterval in initialize();
+		virtual boolean initialize() {
+			if (!rtc.begin()) {
+				Serial.println(F("RTC not found."));
+				while (true);
+			}
+			if (!rtc.isrunning()) {
+				Serial.println(F("RTC not running..."));
+				while (true);
+			}
+			if (!storage.begin()) {
+				Serial.println(F("Card Initialization Failed."));
+				while (true);
+			}
+			this->beginning = rtc.now();
+		}
+
+		void log(StringDataPacket data, TimeLogOption opt = TIMESPAN) const {
+			File log = storage.open(data.fileName, FILE_WRITE);
+			if (!log) {
+				Serial.println(F("File IO Error."));
+				return;
+			}
+			switch (opt)
+			{
+			case TIMESTAMP:
+				log.print(rtc.now().timestamp());
+				break;
+			case TIMESPAN:
+				TimeSpan interval = rtc.now() - this->beginning;
+				log.print(interval.days());
+				log.print(F(":"));
+				log.print(interval.hours());
+				log.print(F(":"));
+				log.print(interval.minutes());
+				log.print(F(":"));
+				log.print(interval.seconds());
+				break;
+			case MILLISECONDS:
+				log.print(millis());
+				break;
+			default:
+				break;
+			}
+			log.print(F(" "));
+			log.println(data.measuredValue);
+			log.close();
+		}
+	};
+
+	namespace Default {
+		RTC_DS1307 RTC;
+		ILogger Logger(SD, RTC);
+	}
 }

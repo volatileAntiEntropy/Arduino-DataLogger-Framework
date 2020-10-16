@@ -3,19 +3,25 @@
  Created:	2020/4/19 17:56:51
  Author:	qinbi
 */
-#include "Sensor.hpp"
-#include <math.h>
+#include "SensorManager.hpp"
+#include "SerialConsole.hpp"
+#include "ArduinoDataLoggerUtils.hpp"
+
 using namespace ArduinoDataLogger;
-SensorManagerSingleton<1> SensorManager(Logger);
+using namespace ArduinoDataLogger::Default;
+using namespace ArduinoDataLogger::Utils;
+
+SensorManagerClass<1> SensorManager(Logger);
+SerialConsole<1> Console(SensorManager);
 Sensor<float>* Thermistor = nullptr;
 constexpr float ref_temp_inverse = 1 / (25 + 273.15);
+
 // the setup function runs once when you press reset or power the board
 void setup() {
     Serial.begin(115200);
-    SensorManager.initialize();
     //Name should be less than 8 characters
     Thermistor = SensorManager.build<float>(F("Therm"));
-    Thermistor->setup = []() {
+    Thermistor->onSetup = []() {
         pinMode(A0, INPUT);
     };
     Thermistor->onUpdate = []() {
@@ -26,26 +32,20 @@ void setup() {
         result -= 273.15;
         return (float)result;
     };
+    SensorManager.initialize();
     SensorManager.setup();
     //In Microseconds
-    SensorManager.setUpdateClock(1000000);
-    Serial.println(F("Initialization Finished."));
+    SensorManager.setUpdateClock(100000);
+    Serial.println(F("Initialization finished."));
+    SensorManager.startUpdateClock();
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-    SensorManager.updateOnClockInterrupt(SerialOnly);
+    SensorManager.updateOnClockInterrupt(LogOnly);
     yield();
 }
 
 void serialEvent() {
-    String command = Serial.readString();
-    if (command == F("stop")) {
-        SensorManager.stopUpdateClock();
-        Serial.println(F("Sensors Stopped."));
-    }
-    else if (command == F("start")) {
-        SensorManager.startUpdateClock();
-        Serial.println(F("Sensors Started."));
-    }
+    Console.processCommand(Serial.readString());
 }
