@@ -20,7 +20,7 @@ namespace ArduinoDataLogger {
 		ILogger(SDClass& Sd, RTC_DS1307& RTC) :storage(Sd), rtc(RTC), beginning() {	}
 
 		//if you want to set data update event under other conditions, here is an example
-		//sensor.handle = app.onAvalable(&Serial, sensor.update);
+		//sensor.handle = app.onAvailable(&Serial, sensor.update);
 		//put them in initialize(); and also setInterval in initialize();
 		virtual boolean initialize() {
 			if (!rtc.begin()) {
@@ -38,7 +38,7 @@ namespace ArduinoDataLogger {
 			this->beginning = rtc.now();
 		}
 
-		void log(StringDataPacket data, TimeLogOption opt = TIMESPAN) const {
+		void log(const StringDataPacket& data, TimeLogOption opt = TIMESPAN) const {
 			File log = storage.open(data.fileName, FILE_WRITE);
 			if (!log) {
 				Serial.println(F("File IO Error."));

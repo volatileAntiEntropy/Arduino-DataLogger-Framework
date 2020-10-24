@@ -28,16 +28,11 @@ namespace ArduinoDataLogger
 
 		ISensor* getSensor(const String& name) {
 			for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
-				if (SensorCollection[i]->fileName() == name) {
+				if (SensorCollection[i]->nameNoExtension() == name) {
 					return SensorCollection[i];
 				}
 				return nullptr;
 			}
-		}
-
-		template<class T>
-		Sensor<T>& getSensor(const String& name) {
-
 		}
 
 		template<class T>
@@ -148,20 +143,20 @@ namespace ArduinoDataLogger
 					for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 						if (SensorCollection[i]->isTurnedOn()) {
 							Serial.print(*(SensorCollection[i]));
-							Serial.print(F(" "));
+							Serial.println();
 						}
 					}
-					Serial.println();
+					Serial.println(F("=========="));
 					break;
 				case LogAndSerial:
 					this->log();
 					for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 						if (SensorCollection[i]->isTurnedOn()) {
 							Serial.print(*(SensorCollection[i]));
-							Serial.print(F(" "));
+							Serial.println();
 						}
 					}
-					Serial.println();
+					Serial.println(F("=========="));
 					break;
 				case DoNothing:
 					break;

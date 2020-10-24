@@ -3,7 +3,7 @@
 #include "Sensor.hpp"
 
 namespace ArduinoDataLogger {
-	class AnalogSensor :protected Sensor<int> {
+	class AnalogSensor :public Sensor<int> {
 	protected:
 		uint8_t pin;
 	public:

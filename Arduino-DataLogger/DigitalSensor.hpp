@@ -3,7 +3,7 @@
 #include "Sensor.hpp"
 
 namespace ArduinoDataLogger {
-	class DigitalSensor :protected Sensor<int> {
+	class DigitalSensor :public Sensor<int> {
 	protected:
 		uint8_t pin;
 		int8_t mode;
