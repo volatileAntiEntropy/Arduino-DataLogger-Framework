@@ -93,7 +93,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Arduino-DataLogger;C:\Users\qinbi\Documents\Arduino\libraries\SD\src;C:\Users\qinbi\Documents\Arduino\libraries\RTClib;C:\Users\qinbi\Documents\Arduino\libraries\TimerOne;C:\Users\qinbi\Documents\Arduino\libraries\DHT_sensor_library;C:\Users\qinbi\Documents\Arduino\libraries\HX711_Arduino_Library\src;D:\Programs\Arduino\hardware\arduino\avr\libraries\SPI\src;D:\Programs\Arduino\hardware\arduino\avr\libraries\Wire\src;C:\Users\qinbi\Documents\Arduino\libraries\Adafruit_Unified_Sensor;C:\Users\qinbi\Documents\Arduino\libraries\SD\src\utility;D:\Programs\Arduino\hardware\arduino\avr\libraries\Wire\src\utility;D:\Programs\Arduino\hardware\arduino\avr\cores\arduino;D:\Programs\Arduino\hardware\arduino\avr\variants\standard;D:\Programs\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;D:\Programs\Arduino\hardware\tools\avr\avr\include;D:\Programs\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;D:\Programs\Arduino\hardware\tools\avr\avr\include-fixed;D:\Programs\Arduino\hardware\tools\avr\avr\include\avr;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Arduino-DataLogger;C:\Users\qinbi\Documents\Arduino\libraries\SD\src;C:\Users\qinbi\Documents\Arduino\libraries\RTClib;C:\Users\qinbi\Documents\Arduino\libraries\TimerOne;C:\Users\qinbi\Documents\Arduino\libraries\DHT_sensor_library;C:\Users\qinbi\Documents\Arduino\libraries\HX711_Arduino_Library\src;D:\Programs\Arduino\hardware\arduino\avr\libraries\SPI\src;D:\Programs\Arduino\hardware\arduino\avr\libraries\Wire\src;C:\Users\qinbi\Documents\Arduino\libraries\Adafruit_Unified_Sensor;D:\Programs\Arduino\hardware\arduino\avr\cores\arduino;D:\Programs\Arduino\hardware\arduino\avr\variants\standard;D:\Programs\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;D:\Programs\Arduino\hardware\tools\avr\avr\include;D:\Programs\Arduino\hardware\tools\avr\\lib\gcc\avr\7.3.0\include;D:\Programs\Arduino\hardware\tools\avr\avr\include-fixed;D:\Programs\Arduino\hardware\tools\avr\avr\include\avr;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.2\include;D:\Programs\Arduino\hardware\tools\avr\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.Arduino-DataLogger.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>__AVR_atmega328p__;__AVR_ATmega328P__;__AVR_ATmega328p__;F_CPU=16000000L;ARDUINO=108013;ARDUINO_AVR_UNO;ARDUINO_ARCH_AVR;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -134,7 +134,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties config.Debug.customdebug_uno_debugger_type="universal" />
+      <UserProperties arduino.upload.port="COM4" config.Debug.customdebug_uno_debugger_type="universal" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

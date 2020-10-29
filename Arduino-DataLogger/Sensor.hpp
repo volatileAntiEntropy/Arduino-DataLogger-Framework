@@ -57,9 +57,9 @@ namespace ArduinoDataLogger
 		voidCallback onSetup;
 		updateCallback onUpdate;
 
-		Sensor(const String &Name) : ISensor(Name), isWorking(true) {}
+		Sensor(const String& Name) : ISensor(Name), isWorking(true) { this->current = DataType(); }
 
-		Sensor(const String &Name, voidCallback setupFunction, updateCallback updateFunction) : ISensor(Name), onSetup(setupFunction), onUpdate(updateFunction), isWorking(true) {}
+		Sensor(const String &Name, voidCallback setupFunction, updateCallback updateFunction) : ISensor(Name), onSetup(setupFunction), onUpdate(updateFunction), isWorking(true) { this->current = DataType(); }
 
 		inline DataType getCurrentData() const
 		{

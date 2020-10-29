@@ -36,59 +36,6 @@ namespace ArduinoDataLogger
 		}
 
 		template<class T>
-		Sensor<T>* build(const String& name) {
-			if (InstanceCounter >= SIZE) {
-				return nullptr;
-			}
-			else {
-				Sensor<T>* ptr = new Sensor<T>(name);
-				SensorCollection[InstanceCounter] = static_cast<ISensor*>(ptr);
-				InstanceCounter++;
-				return (ptr);
-			}
-		}
-
-		template<class T>
-		Sensor<T>* build(const __FlashStringHelper* name) {
-			if (InstanceCounter >= SIZE) {
-				return nullptr;
-			}
-			else {
-				Sensor<T>* ptr = new Sensor<T>(name);
-				SensorCollection[InstanceCounter] = static_cast<ISensor*>(ptr);
-				InstanceCounter++;
-				return (ptr);
-			}
-		}
-
-		template<class T>
-		Sensor<T>* build(const String& name, void(*setupFunction)(void), T(*updateFunction)(void)) {
-			if (InstanceCounter >= SIZE) {
-				return nullptr;
-			}
-			else {
-				Sensor<T>* ptr = new Sensor<T>(name, setupFunction, updateFunction);
-				SensorCollection[InstanceCounter] = static_cast<ISensor*>(ptr);
-				InstanceCounter++;
-				return (ptr);
-			}
-		}
-
-		template<class T>
-		Sensor<T>* build(const __FlashStringHelper* name, void(*setupFunction)(void), T(*updateFunction)(void))
-		{
-			if (InstanceCounter >= SIZE) {
-				return nullptr;
-			}
-			else {
-				Sensor<T>* ptr = new Sensor<T>(name, setupFunction, updateFunction);
-				SensorCollection[InstanceCounter] = static_cast<ISensor*>(ptr);
-				InstanceCounter++;
-				return (ptr);
-			}
-		}
-
-		template<class T>
 		void push(Sensor<T>& sensor) {
 			if (InstanceCounter < SIZE) {
 				SensorCollection[InstanceCounter] = static_cast<ISensor*>(&sensor);
@@ -103,7 +50,6 @@ namespace ArduinoDataLogger
 					Logger.storage.remove(SensorCollection[i]->fileName());
 				}
 			}
-			Serial.println(F("time value"));
 		}
 
 		void setup() const {
@@ -124,22 +70,24 @@ namespace ArduinoDataLogger
 			}
 		}
 
-		void log() const {
+		void log(TimeLogOption opt = MILLISECONDS) const {
 			for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 				if (SensorCollection[i]->isTurnedOn()) {
-					Logger.log(SensorCollection[i]->toStringPacket());
+					Logger.log(SensorCollection[i]->toStringPacket(),opt);
 				}
 			}
 		}
 
-		void updateOnClockInterrupt(UpdateOption opt = LogOnly) const {
+		void updateOnClockInterrupt(UpdateOption opt = LogOnly, TimeLogOption timeOpt = MILLISECONDS) const {
 			if (shouldUpdate) {
 				this->update();
 				switch (opt) {
 				case LogOnly:
-					this->log();
+					this->log(timeOpt);
 					break;
 				case SerialOnly:
+					Serial.print(F("Time: "));
+					Serial.println(millis());
 					for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 						if (SensorCollection[i]->isTurnedOn()) {
 							Serial.print(*(SensorCollection[i]));
@@ -149,7 +97,9 @@ namespace ArduinoDataLogger
 					Serial.println(F("=========="));
 					break;
 				case LogAndSerial:
-					this->log();
+					this->log(timeOpt);
+					Serial.print(F("Time: "));
+					Serial.println(millis());
 					for (uint8_t i = 0; i < SIZE && SensorCollection[i] != nullptr; i++) {
 						if (SensorCollection[i]->isTurnedOn()) {
 							Serial.print(*(SensorCollection[i]));

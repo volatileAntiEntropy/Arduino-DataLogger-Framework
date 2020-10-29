@@ -43,7 +43,7 @@ namespace ArduinoDataLogger
 			{
 				String result;
 				result.concat(this->first);
-				result.concat(F(", "));
+				result.concat(F(","));
 				result.concat(this->second);
 				return result;
 			}
@@ -124,25 +124,34 @@ namespace ArduinoDataLogger
 			uint8_t signalPin;
 			uint8_t SCKPin;
 			uint8_t gain;
+			float scale;
 		public:
 			HX711 LoadCellObject;
 
-			LoadCell(const String& name, uint8_t pinSIG, uint8_t pinSCK, uint8_t chipGain = 128) :Sensor<float>(name), LoadCellObject() {
+			LoadCell(const String& name, uint8_t pinSIG, uint8_t pinSCK, uint8_t chipGain = 128, float scaleFactor = 1.0f) :Sensor<float>(name), LoadCellObject() {
 				this->signalPin = pinSIG;
 				this->SCKPin = pinSCK;
 				this->gain = chipGain;
 				this->onSetup = nullptr;
 				this->onUpdate = nullptr;
+				this->scale = scaleFactor;
 			}
 
 			virtual void setup() override {
 				this->LoadCellObject.begin(this->signalPin, this->SCKPin, this->gain);
-				this->LoadCellObject.tare();
+				if(this->LoadCellObject.is_ready()){
+					this->LoadCellObject.tare(20);
+					this->LoadCellObject.set_scale(this->scale);
+				}
+				else{
+					Serial.println(F("HX711 not found."));
+					while(true);
+				}
 			}
 
 			virtual void update() override {
 				if (this->LoadCellObject.is_ready()) {
-					this->current = this->LoadCellObject.get_value();
+					this->current = this->LoadCellObject.get_units();
 				}
 			}
 

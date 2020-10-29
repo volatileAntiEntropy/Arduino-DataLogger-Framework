@@ -27,10 +27,6 @@ namespace ArduinoDataLogger {
 				Serial.println(F("RTC not found."));
 				while (true);
 			}
-			if (!rtc.isrunning()) {
-				Serial.println(F("RTC not running..."));
-				while (true);
-			}
 			if (!storage.begin()) {
 				Serial.println(F("Card Initialization Failed."));
 				while (true);
@@ -38,7 +34,7 @@ namespace ArduinoDataLogger {
 			this->beginning = rtc.now();
 		}
 
-		void log(const StringDataPacket& data, TimeLogOption opt = TIMESPAN) const {
+		void log(const StringDataPacket& data, TimeLogOption opt = MILLISECONDS) const {
 			File log = storage.open(data.fileName, FILE_WRITE);
 			if (!log) {
 				Serial.println(F("File IO Error."));
@@ -47,9 +43,20 @@ namespace ArduinoDataLogger {
 			switch (opt)
 			{
 			case TIMESTAMP:
+				if (!rtc.isrunning()) {
+					Serial.println(F("RTC not running..."));
+					while (true);
+				}
 				log.print(rtc.now().timestamp());
 				break;
+      case MILLISECONDS:
+        log.print(millis());
+        break;
 			case TIMESPAN:
+				if (!rtc.isrunning()) {
+					Serial.println(F("RTC not running..."));
+					while (true);
+				}
 				TimeSpan interval = rtc.now() - this->beginning;
 				log.print(interval.days());
 				log.print(F(":"));
@@ -59,13 +66,11 @@ namespace ArduinoDataLogger {
 				log.print(F(":"));
 				log.print(interval.seconds());
 				break;
-			case MILLISECONDS:
-				log.print(millis());
-				break;
 			default:
+        Serial.println(F("No Such Option."));
 				break;
 			}
-			log.print(F(" "));
+			log.print(F(","));
 			log.println(data.measuredValue);
 			log.close();
 		}
